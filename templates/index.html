@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en" data-accent="lime">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070b0a">
+<title>FITGIRL EXTRACTOR</title>
+
+<style>
+:root {
+  color-scheme: dark;
+  --bg:#070b0a;
+  --panel:rgba(15,24,19,.72);
+  --line:rgba(255,255,255,.12);
+  --text:#f2f7f3;
+  --muted:#a1b1a7;
+  --accent:#a8ff60;
+  --accent2:#36d69a;
+  --accent-ink:#091309;
+  --shadow:0 20px 65px #0006;
+}
+
+:root[data-accent="red"] {
+  --accent:#ff6474;--accent2:#ff3d55;--accent-ink:#20090c;
+}
+:root[data-accent="blue"] {
+  --accent:#67bcff;--accent2:#3a83ff;--accent-ink:#071425;
+}
+:root[data-accent="pink"] {
+  --accent:#ff80d0;--accent2:#e84ba9;--accent-ink:#26091c;
+}
+:root[data-accent="purple"] {
+  --accent:#bd9bff;--accent2:#8664ed;--accent-ink:#180d2a;
+}
+:root[data-accent="white"] {
+  --accent:#f4f7f5;--accent2:#b9c8bf;--accent-ink:#101412;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:25px}
+body{
+  margin:0;
+  min-height:100vh;
+  padding-bottom:100px;
+  overflow-x:hidden;
+  color:var(--text);
+  background:
+    radial-gradient(ellipse at 10% 0%,color-mix(in srgb,var(--accent) 13%,transparent),transparent 40%),
+    radial-gradient(ellipse at 90% 45%,#643aff12,transparent 38%),
+    var(--bg);
+  font:14px/1.6 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+button,input,textarea{font:inherit}
+button,a{-webkit-tap-highlight-color:transparent}
+button{cursor:pointer}
+a{color:inherit}
+svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.wrap{width:min(1320px,100% - 38px);margin:auto}
+
+/* Animated waves */
+.wave-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.wave{
+  position:absolute;
+  width:150%;
+  height:330px;
+  left:-25%;
+  border-radius:48%;
+  border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
+  filter:drop-shadow(0 0 12px color-mix(in srgb,var(--accent) 14%,transparent));
+  transform:rotate(-9deg);
+  animation:waveMove 15s ease-in-out infinite alternate;
+}
+.wave:nth-child(1){top:70px}
+.wave:nth-child(2){top:120px;animation-duration:20s;animation-delay:-4s;border-color:#28baff45}
+.wave:nth-child(3){top:180px;animation-duration:24s;animation-delay:-8s;border-color:#b55cff35}
+@keyframes waveMove{
+  from{transform:translateX(-3%) rotate(-9deg) translateY(0)}
+  to{transform:translateX(3%) rotate(-5deg) translateY(35px)}
+}
+
+/* Glass surfaces */
+.glass{
+  background:linear-gradient(135deg,#ffffff0b,#ffffff03);
+  border:1px solid var(--line);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+  box-shadow:var(--shadow);
+}
+
+/* Header */
+header{
+  position:sticky;top:0;z-index:30;
+  border-bottom:1px solid #ffffff12;
+  background:#080d0bea;
+  backdrop-filter:blur(22px);
+}
+.topbar{
+  min-height:72px;display:flex;align-items:center;
+  justify-content:space-between;gap:18px;
+}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;font-weight:900;letter-spacing:.06em}
+.brand-mark{
+  width:42px;height:42px;display:grid;place-items:center;
+  border-radius:14px;background:var(--accent);color:var(--accent-ink);
+  font-size:24px;font-weight:1000;box-shadow:0 0 28px color-mix(in srgb,var(--accent) 25%,transparent);
+}
+.brand-name span{color:var(--accent)}
+.header-right{display:flex;align-items:center;justify-content:flex-end;gap:13px;flex-wrap:wrap}
+.header-links{display:flex;gap:5px;flex-wrap:wrap}
+.header-links a{
+  padding:8px 11px;text-decoration:none;color:var(--muted);
+  border-radius:10px;font-size:12px;transition:.2s;
+}
+.header-links a:hover{color:var(--accent);background:#ffffff08}
+.palette{display:flex;gap:8px;align-items:center}
+.swatch{
+  width:17px;height:17px;border-radius:50%;border:2px solid #ffffff45;
+  box-shadow:0 0 0 2px transparent;transition:.2s;
+}
+.swatch:hover{transform:scale(1.16)}
+.swatch[aria-pressed="true"]{box-shadow:0 0 0 2px var(--text)}
+.swatch[data-color="lime"]{background:#a8ff60}
+.swatch[data-color="red"]{background:#ff6474}
+.swatch[data-color="blue"]{background:#67bcff}
+.swatch[data-color="pink"]{background:#ff80d0}
+.swatch[data-color="purple"]{background:#bd9bff}
+.swatch[data-color="white"]{background:#f4f7f5}
+
+/* Buttons and headings */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  padding:10px 14px;border-radius:12px;
+  border:1px solid var(--line);background:#ffffff06;color:var(--text);
+  text-decoration:none;font-size:12px;font-weight:750;
+  transition:transform .2s,border-color .2s,background .2s,box-shadow .2s;
+}
+.btn:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 8px 25px #0004}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:wait;transform:none}
+section{scroll-margin-top:90px}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin:30px 0 15px}
+.section-head h2{margin:0;font-size:23px;letter-spacing:-.035em}
+.section-head p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.muted{color:var(--muted)}
+
+/* Hero */
+.hero{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:25px;align-items:center;padding:43px 0 27px;
+}
+.eyebrow{font-size:11px;color:var(--accent);font-weight:850;letter-spacing:.18em;text-transform:uppercase}
+.hero h1{font-size:clamp(37px,5vw,62px);line-height:1.03;letter-spacing:-.06em;margin:12px 0}
+.hero h1 span{color:var(--accent)}
+.hero-copy>p{max-width:540px;color:var(--muted);margin:0 0 22px}
+.hero-actions{display:flex;gap:11px;flex-wrap:wrap}
+.host-pill{
+  display:flex;align-items:center;gap:10px;padding:12px 17px;
+  border:1px solid color-mix(in srgb,var(--accent) 50%,transparent);
+  border-radius:15px;background:#ffffff05;text-decoration:none;font-weight:800;
+}
+.host-pill svg{color:var(--accent)}
+.host-pill:hover{background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.hero-note{margin-top:16px;color:var(--muted);font-size:11px}
+
+/* Downloader cards */
+.download-panel{padding:19px;border-radius:23px}
+.panel-title{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:850;margin:0 0 13px}
+.panel-title svg{color:var(--accent)}
+.download-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.download-card{
+  overflow:hidden;border:1px solid var(--line);border-radius:19px;
+  background:linear-gradient(145deg,#ffffff0a,#ffffff02);
+  transition:border-color .25s,transform .25s;
+}
+.download-card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
+.card-copy{padding:15px}
+.download-title{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.download-icon{
+  width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;
+  border-radius:14px;background:color-mix(in srgb,var(--accent) 12%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);color:var(--accent);
+}
+.download-title h3{font-size:14px;line-height:1.35;margin:0}
+.download-card p{font-size:11px;color:var(--muted);margin:0}
+
+/* Both downloader screenshots use identical 16:9 frames */
+.screenshot-wrap{padding:11px 11px 0}
+.screenshot-frame{
+  width:100%;aspect-ratio:16/9;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid #ffffff20;border-radius:13px;
+  background:#070b0a;
+}
+.screenshot-frame img{
+  display:block;width:100%;height:100%;
+  object-fit:contain;object-position:center;
+  border-radius:12px;background:#070b0a;
+}
+.screenshot-caption{font-size:10px;color:var(--muted);margin-top:7px}
+.download-card .btn{width:100%;margin-top:12px}
+
+/* Game cards */
+.filters{display:flex;gap:10px;margin-bottom:15px}
+.search{flex:1;min-width:0}
+.search input,.extract-input{
+  width:100%;padding:12px 14px;border-radius:13px;
+  border:1px solid var(--line);background:#080d0bc9;color:var(--text);outline:none;
+}
+.search input:focus,.extract-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent)}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.game-card{
+  overflow:hidden;border:1px solid var(--line);border-radius:17px;
+  background:linear-gradient(180deg,#ffffff09,#ffffff02);
+  transition:transform .22s,border-color .22s,box-shadow .22s;
+  animation:rise .4s both;
+}
+.game-card:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--accent) 50%,transparent);box-shadow:0 14px 35px #0005}
+.cover{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;background:#101612}
+.cover img{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;transition:transform .35s}
+.game-card:hover .cover img{transform:scale(1.035)}
+.cover-fallback{
+  position:absolute;inset:0;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--accent) 15%,#172019),#080d0a 75%);
+  color:var(--accent);
+}
+.cover-fallback[hidden]{display:none!important}
+.cover-fallback svg{width:38px;height:38px;opacity:.8}
+.game-meta{padding:11px}
+.game-meta h3{font-size:12px;line-height:1.4;min-height:34px;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.game-meta .btn{width:100%;font-size:11px;padding:8px}
+.state{grid-column:1/-1;text-align:center;padding:32px 15px;border:1px dashed var(--line);border-radius:15px;color:var(--muted)}
+.state strong{display:block;color:var(--text);margin-bottom:5px}
+
+/* Extractors */
+.extract-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.tool{padding:19px;border-radius:20px}
+.tool-heading{display:flex;align-items:center;gap:11px}
+.tool-heading .download-icon{width:40px;height:40px}
+.tool-heading h3{margin:0;font-size:16px}
+.tool-heading p{margin:1px 0 0;color:var(--muted);font-size:11px}
+.extract-input{margin:15px 0 10px}
+.tool-buttons{display:flex;gap:8px;flex-wrap:wrap}
+.tool-buttons .btn{flex:1}
+.output{
+  display:block;width:100%;min-height:130px;resize:vertical;
+  margin-top:11px;padding:12px;border-radius:13px;
+  border:1px solid var(--line);background:#070b0ae8;color:#d7f2d2;
+  font:12px/1.6 ui-monospace,Consolas,monospace;
+}
+.status{min-height:18px;margin-top:8px;color:var(--muted);font-size:11px}
+.status.ok{color:var(--accent)}
+.status.err{color:#ff777f}
+
+/* Footer */
+footer{margin-top:37px;border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#0b110de0}
+.footer-main{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:28px;padding:24px}
+.footer-brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.05em}
+.footer-brand .brand-mark{width:37px;height:37px;font-size:20px}
+.footer-about{max-width:400px;color:var(--muted);font-size:12px;margin:12px 0 0}
+.footer-col h3{font-size:12px;color:var(--text);margin:3px 0 12px}
+.footer-col a{display:block;text-decoration:none;color:var(--muted);font-size:12px;margin:7px 0}
+.footer-col a:hover{color:var(--accent)}
+.footer-bottom{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 24px;border-top:1px solid var(--line);font-size:10px;color:var(--muted)}
+
+/* Bottom navbar */
+.bottom-nav{
+  position:fixed;z-index:50;bottom:13px;left:50%;transform:translateX(-50%);
+  width:min(620px,calc(100% - 22px));display:flex;gap:4px;padding:8px;
+  border:1px solid #ffffff20;border-radius:20px;
+  background:#0b110de8;backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+  box-shadow:0 15px 45px #0009;animation:navIn .55s both;
+}
+.nav-item{
+  flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:10px 8px;border:0;border-radius:13px;background:transparent;
+  color:var(--muted);font-size:11px;font-weight:750;text-decoration:none;transition:.2s;
+}
+.nav-item:hover,.nav-item.active{background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent)}
+.nav-item:hover{transform:translateY(-2px)}
+.nav-item svg{width:17px;height:17px}
+.theme-pop{
+  display:none;position:fixed;z-index:60;bottom:85px;left:50%;transform:translateX(-50%);
+  padding:13px 16px;border-radius:16px;border:1px solid var(--line);
+  background:#0d140ff2;backdrop-filter:blur(20px);box-shadow:var(--shadow);
+}
+.theme-pop.open{display:block;animation:rise .2s both}
+.theme-pop .palette{gap:12px}
+.theme-pop .swatch{width:23px;height:23px}
+
+/* Animations and responsive layout */
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes navIn{from{opacity:0;transform:translate(-50%,15px)}to{opacity:1;transform:translate(-50%,0)}}
+
+@media(max-width:1050px){
+  .hero{grid-template-columns:1fr}
+  .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .header-links{display:none}
+}
+@media(max-width:760px){
+  .wrap{width:calc(100% - 24px)}
+  .topbar{min-height:63px}
+  .brand{font-size:12px;gap:8px}
+  .brand-mark{width:36px;height:36px;border-radius:12px}
+  .header-right{gap:8px}
+  .palette{gap:6px}
+  .swatch{width:14px;height:14px}
+  .hero{padding:32px 0 20px;gap:22px}
+  .hero h1{font-size:43px}
+  .download-grid,.extract-grid{grid-template-columns:1fr}
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+  .section-head h2{font-size:20px}
+  .footer-main{grid-template-columns:1fr 1fr;gap:20px;padding:19px}
+  .footer-main>div:first-child{grid-column:1/-1}
+}
+@media(max-width:480px){
+  body{padding-bottom:90px}
+  .wrap{width:calc(100% - 20px)}
+  .brand-name{letter-spacing:.025em}
+  .hero h1{font-size:37px}
+  .hero-actions .host-pill{flex:1;justify-content:center}
+  .download-panel{padding:12px}
+  .download-grid{gap:11px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .game-meta{padding:9px}
+  .game-meta h3{font-size:11px}
+  .section-head{align-items:start}
+  .section-head p{max-width:220px}
+  .nav-item{flex-direction:column;gap:3px;padding:8px 3px;font-size:9px}
+  .nav-item svg{width:19px;height:19px}
+  .footer-main{grid-template-columns:1fr 1fr;gap:17px;padding:16px}
+  .footer-bottom{padding:12px 16px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+
+<body>
+<div class="wave-bg" aria-hidden="true">
+  <div class="wave"></div><div class="wave"></div><div class="wave"></div>
+</div>
+
+<header>
+  <div class="wrap topbar">
+    <a href="#home" class="brand">
+      <span class="brand-mark">F</span>
+      <span class="brand-name">FITGIRL <span>EXTRACTOR</span></span>
+    </a>
+
+    <div class="header-right">
+      <nav class="header-links" aria-label="Header navigation">
+        <a href="#home">Home</a>
+        <a href="#repacks">Repacks</a>
+        <a href="#extractors">Extractors</a>
+        <a href="#downloaders">Downloaders</a>
+      </nav>
+      <div class="palette" aria-label="Accent colours">
+        <button class="swatch" data-color="lime" aria-label="Lime" aria-pressed="true"></button>
+        <button class="swatch" data-color="red" aria-label="Red" aria-pressed="false"></button>
+        <button class="swatch" data-color="blue" aria-label="Blue" aria-pressed="false"></button>
+        <button class="swatch" data-color="pink" aria-label="Pink" aria-pressed="false"></button>
+        <button class="swatch" data-color="purple" aria-label="Purple" aria-pressed="false"></button>
+        <button class="swatch" data-color="white" aria-label="White" aria-pressed="false"></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="home">
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">Game pages · Link tools · Download resources</div>
+      <h1>FitGirl Repacks<br><span>&amp; Link Extractor</span></h1>
+      <p>Browse popular game pages, extract supported DataNodes and FuckingFast links, and find batch downloader resources in one clean interface.</p>
+
+      <div class="hero-actions">
+        <a class="host-pill" href="#datanodes">
+          <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.1 0l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.1 0l-3 3A5 5 0 0 0 11 21l1.7-1.7"/></svg>
+          DataNodes
+        </a>
+        <a class="host-pill" href="#fuckingfast">
+          <svg viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 10-13h-7z"/></svg>
+          FuckingFast
+        </a>
+      </div>
+      <div class="hero-note">Independent interface · External services are operated by their respective owners.</div>
+    </div>
+
+    <div class="download-panel glass" id="downloaders">
+      <h2 class="panel-title">
+        <svg viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5"/><path d="M4 17v3h16v-3"/></svg>
+        Batch / Mass Downloaders
+      </h2>
+
+      <div class="download-grid">
+        <article class="download-card">
+          <div class="screenshot-wrap">
+            <div class="screenshot-frame">
+              <img
+                src="https://github.com/LeyckerS/moondownloader/blob/main/docs/gui_boot.png?raw=1"
+                alt="MoonDownloader interface screenshot"
+                loading="lazy"
+                onerror="this.style.opacity='.25';this.alt='MoonDownloader screenshot unavailable';">
+            </div>
+            <div class="screenshot-caption">MoonDownloader · GUI preview</div>
+          </div>
+          <div class="card-copy">
+            <div class="download-title">
+              <span class="download-icon">
+                <svg viewBox="0 0 24 24"><path d="M20.5 15A8.5 8.5 0 0 1 9 3.5 8.5 8.5 0 1 0 20.5 15z"/></svg>
+              </span>
+              <h3>DataNodes + MoonDownloader</h3>
+            </div>
+            <p>Batch downloader resource for DataNodes links.</p>
+            <a class="btn primary" href="https://www.mediafire.com/file/gh21bh5fxiaadtz/installer.bat/file" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5"/><path d="M4 17v3h16v-3"/></svg>
+              View installer
+              <svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></svg>
+            </a>
+          </div>
+        </article>
+
+        <article class="download-card">
+          <div class="screenshot-wrap">
+            <div class="screenshot-frame">
+              <img
+                src="https://i.postimg.cc/vZQN3frQ/Screenshot-2026-10-28-002748.png"
+                alt="FuckingFast Downloader interface screenshot"
+                loading="lazy"
+                onerror="this.style.opacity='.25';this.alt='FuckingFast screenshot unavailable';">
+            </div>
+            <div class="screenshot-caption">FuckingFast Downloader · GUI preview</div>
+          </div>
+          <div class="card-copy">
+            <div class="download-title">
+              <span class="download-icon">
+                <svg viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 10-13h-7z"/></svg>
+              </span>
+              <h3>FuckingFast Downloader</h3>
+            </div>
+            <p>Windows downloader with multi-threading and resume support.</p>
+            <a class="btn primary" href="https://github.com/Riteshp2001/Fucking-Fast-Downloader/releases/download/v2.1.2/FuckingFastDownloader-v2.1.2-windows-x64-setup.exe" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5"/><path d="M4 17v3h16v-3"/></svg>
+              Windows installer
+              <svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/></svg>
+            </a>
+            <a class="btn" href="https://github.com/Riteshp2001/Fucking-Fast-Downloader/releases" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 6v-3.9a3.4 3.4 0 0 0-.9-2.7c3-.3 6.1-1.5 6.1-6.7a5.2 5.2 0 0 0-1.4-3.6 4.8 4.8 0 0 0-.1-3.6S17.5 1.2 15 3a13.3 13.3 0 0 0-7 0C5.5 1.2 3.3 1.5 3.3 1.5a4.8 4.8 0 0 0-.1 3.6 5.2 5.2 0 0 0-1.4 3.6c0 5.2 3.1 6.4 6.1 6.7A3.4 3.4 0 0 0 7 18v4"/></svg>
+              Official releases
+            </a>
+          </div>
+        </article>
+      </div>
+      <div class="hero-note">Review third-party installers before running them. This site does not execute external downloads.</div>
+    </div>
+  </section>
+
+  <section id="repacks">
+    <div class="section-head">
+      <div>
+        <h2>Popular Repacks</h2>
+        <p>Choose a game to open its source page.</p>
+      </div>
+      <button class="btn" id="refreshBtn" type="button">
+        <svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.5-3"/></svg>
+        Refresh list
+      </button>
+    </div>
+
+    <div class="filters">
+      <label class="search">
+        <input id="search" type="search" placeholder="Search games..." autocomplete="off">
+      </label>
+    </div>
+
+    <div class="grid" id="gamesGrid">
+      <div class="state"><strong>Loading games…</strong>Fetching the popular list.</div>
+    </div>
+  </section>
+
+  <section id="extractors">
+    <div class="section-head">
+      <div>
+        <h2>Link Extractors</h2>
+        <p>Enter a supported game page URL to extract available host links.</p>
+      </div>
+    </div>
+
+    <div class="extract-grid">
+      <article class="tool glass" id="datanodes">
+        <div class="tool-heading">
+          <span class="download-icon">
+            <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.1 0l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.1 0l-3 3A5 5 0 0 0 11 21l1.7-1.7"/></svg>
+          </span>
+          <div>
+            <h3>DataNodes Extractor</h3>
+            <p>Extract DataNodes URLs from a game page.</p>
+          </div>
+        </div>
+        <input class="extract-input" id="datanodesUrl" type="url" placeholder="https://fitgirl-repacks.site/game-name/">
+        <div class="tool-buttons">
+          <button class="btn primary" type="button" onclick="extractLinks('datanodes')">Extract links</button>
+          <button class="btn" type="button" onclick="copyOutput('datanodes')">Copy all</button>
+          <button class="btn" type="button" onclick="clearTool('datanodes')">Clear</button>
+        </div>
+        <textarea class="output" id="datanodesOutput" readonly placeholder="Extracted links will appear here…"></textarea>
+        <div class="status" id="datanodesStatus" aria-live="polite"></div>
+      </article>
+
+      <article class="tool glass" id="fuckingfast">
+        <div class="tool-heading">
+          <span class="download-icon">
+            <svg viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 10-13h-7z"/></svg>
+          </span>
+          <div>
+            <h3>FuckingFast Extractor</h3>
+            <p>Extract FuckingFast URLs from a game page.</p>
+          </div>
+        </div>
+        <input class="extract-input" id="fuckingfastUrl" type="url" placeholder="https://fitgirl-repacks.site/game-name/">
+        <div class="tool-buttons">
+          <button class="btn primary" type="button" onclick="extractLinks('fuckingfast')">Extract links</button>
+          <button class="btn" type="button" onclick="copyOutput('fuckingfast')">Copy all</button>
+          <button class="btn" type="button" onclick="clearTool('fuckingfast')">Clear</button>
+        </div>
+        <textarea class="output" id="fuckingfastOutput" readonly placeholder="Extracted links will appear here…"></textarea>
+        <div class="status" id="fuckingfastStatus" aria-live="polite"></div>
+      </article>
+    </div>
+  </section>
+
+  <footer id="site-footer">
+    <div class="footer-main">
+      <div>
+        <div class="footer-brand">
+          <span class="brand-mark">F</span>
+          <span>FITGIRL <span style="color:var(--accent)">EXTRACTOR</span></span>
+        </div>
+        <p class="footer-about">A compact interface for browsing game pages, extracting supported host links, and finding third-party downloader resources. External services are independently operated.</p>
+      </div>
+      <div class="footer-col">
+        <h3>Explore</h3>
+        <a href="#home">Home</a>
+        <a href="#repacks">Popular repacks</a>
+        <a href="#extractors">Link extractors</a>
+        <a href="#downloaders">Batch downloaders</a>
+      </div>
+      <div class="footer-col">
+        <h3>Resources</h3>
+        <a href="https://fitgirl-repacks.site/pop-repacks/" target="_blank" rel="noopener noreferrer">Popular repacks source</a>
+        <a href="https://github.com/Riteshp2001/Fucking-Fast-Downloader/releases" target="_blank" rel="noopener noreferrer">FuckingFast releases</a>
+        <a href="https://github.com/LeyckerS/moondownloader" target="_blank" rel="noopener noreferrer">MoonDownloader repository</a>
+        <a href="#home">Back to top</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="yearNow"></span> FITGIRL EXTRACTOR</span>
+      <span>Coded By @Taisirshaik34 (IG)</span>
+    </div>
+  </footer>
+</main>
+
+<div class="theme-pop glass" id="themePop" aria-label="Accent colour choices">
+  <div class="palette">
+    <button class="swatch" data-color="lime" aria-label="Lime" aria-pressed="true"></button>
+    <button class="swatch" data-color="red" aria-label="Red" aria-pressed="false"></button>
+    <button class="swatch" data-color="blue" aria-label="Blue" aria-pressed="false"></button>
+    <button class="swatch" data-color="pink" aria-label="Pink" aria-pressed="false"></button>
+    <button class="swatch" data-color="purple" aria-label="Purple" aria-pressed="false"></button>
+    <button class="swatch" data-color="white" aria-label="White" aria-pressed="false"></button>
+  </div>
+</div>
+
+<nav class="bottom-nav" aria-label="Main navigation">
+  <a class="nav-item active" href="#home">
+    <svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>Home
+  </a>
+  <a class="nav-item" href="#repacks">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Repacks
+  </a>
+  <a class="nav-item" href="#extractors">
+    <svg viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5"/><path d="M4 20h16"/></svg>Extractors
+  </a>
+  <a class="nav-item" href="#downloaders">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Downloaders
+  </a>
+  <button class="nav-item" id="themeButton" type="button">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2"/></svg>Colours
+  </button>
+</nav>
+
+<script>
+const API_BASE = '';
+let allGames = [];
+
+const grid = document.getElementById('gamesGrid');
+document.getElementById('yearNow').textContent = new Date().getFullYear();
+
+function safeText(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[char]));
+}
+
+function validHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+function fallbackIcon() {
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>';
+}
+
+function renderGames() {
+  const term = document.getElementById('search').value.trim().toLowerCase();
+  const games = allGames.filter(game =>
+    String(game.title || '').toLowerCase().includes(term)
+  ).slice(0, 50);
+
+  if (!games.length) {
+    grid.innerHTML = '<div class="state"><strong>No games found</strong>Try a different search term or refresh the list.</div>';
+    return;
+  }
+
+  grid.innerHTML = games.map((game, index) => {
+    const title = safeText(game.title || 'Untitled game');
+    const url = validHttpUrl(game.url) ? game.url : '';
+    const cover = validHttpUrl(game.cover) ? game.cover : '';
+
+    return `
+      <article class="game-card" style="animation-delay:${Math.min(index,12)*25}ms">
+        <div class="cover">
+          <div class="cover-fallback" ${cover ? 'hidden' : ''} aria-hidden="true">
+            ${fallbackIcon()}
+          </div>
+          ${cover ? `
+            <img
+              src="${safeText(cover)}"
+              alt="${title}"
+              loading="lazy"
+              decoding="async"
+              referrerpolicy="no-referrer"
+              onload="this.previousElementSibling.hidden=true"
+              onerror="this.hidden=true;this.previousElementSibling.hidden=false">
+          ` : ''}
+        </div>
+        <div class="game-meta">
+          <h3 title="${title}">${title}</h3>
+          ${url ? `
+            <a class="btn" href="${safeText(url)}" target="_blank" rel="noopener noreferrer">
+              Open game page
+              <svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></svg>
+            </a>` : '<span class="muted">Page unavailable</span>'}
+        </div>
+      </article>`;
+  }).join('');
+}
+
+async function loadRepacks() {
+  const button = document.getElementById('refreshBtn');
+  button.disabled = true;
+  button.textContent = 'Loading…';
+  grid.innerHTML = '<div class="state"><strong>Loading games…</strong>Fetching the latest list.</div>';
+
+  try {
+    const response = await fetch(`${API_BASE}/api/repacks`, {
+      headers: {Accept:'application/json'}
+    });
+
+    if (!response.ok) throw new Error(`API returned HTTP ${response.status}`);
+
+    const json = await response.json();
+    if (json.success === false) throw new Error(json.error || 'Could not load games');
+
+    const data = Array.isArray(json.data) ? json.data :
+                 Array.isArray(json.repacks) ? json.repacks : [];
+
+    allGames = data.filter(game =>
+      game && game.title && validHttpUrl(game.url)
+    ).slice(0, 50);
+
+    renderGames();
+  } catch (error) {
+    grid.innerHTML = `<div class="state"><strong>Unable to load games</strong>${safeText(error.message)}<br>Check that the Flask backend is running and /api/repacks is available.</div>`;
+  } finally {
+    button.disabled = false;
+    button.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.5-3"/></svg> Refresh list';
+  }
+}
+
+document.getElementById('refreshBtn').addEventListener('click', loadRepacks);
+document.getElementById('search').addEventListener('input', renderGames);
+
+async function extractLinks(host) {
+  const input = document.getElementById(host + 'Url');
+  const output = document.getElementById(host + 'Output');
+  const status = document.getElementById(host + 'Status');
+
+  if (!validHttpUrl(input.value.trim())) {
+    status.className = 'status err';
+    status.textContent = 'Enter a valid HTTP or HTTPS game page URL.';
+    return;
+  }
+
+  status.className = 'status';
+  status.textContent = 'Extracting links…';
+  output.value = '';
+
+  try {
+    const response = await fetch(`${API_BASE}/api/extract`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json',Accept:'application/json'},
+      body:JSON.stringify({url:input.value.trim(),host})
+    });
+
+    const json = await response.json().catch(() => ({}));
+    if (!response.ok || json.success === false) {
+      throw new Error(json.error || `API returned HTTP ${response.status}`);
+    }
+
+    const links = Array.isArray(json.links) ? json.links :
+                  Array.isArray(json[host]) ? json[host] : [];
+
+    output.value = links.join('\n');
+    status.className = 'status ' + (links.length ? 'ok' : '');
+    status.textContent = links.length ?
+      `Found ${links.length} link(s).` : 'No matching links returned.';
+  } catch (error) {
+    status.className = 'status err';
+    status.textContent = `Extractor unavailable: ${error.message}`;
+  }
+}
+
+function clearTool(host) {
+  document.getElementById(host + 'Url').value = '';
+  document.getElementById(host + 'Output').value = '';
+  const status = document.getElementById(host + 'Status');
+  status.className = 'status';
+  status.textContent = 'Cleared.';
+}
+
+async function copyOutput(host) {
+  const output = document.getElementById(host + 'Output');
+  const status = document.getElementById(host + 'Status');
+
+  if (!output.value.trim()) {
+    status.className = 'status err';
+    status.textContent = 'No links to copy yet.';
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(output.value);
+  } catch {
+    output.focus();
+    output.select();
+    document.execCommand('copy');
+  }
+
+  status.className = 'status ok';
+  status.textContent = 'Links copied to clipboard.';
+}
+
+/* Accent colours persist between visits */
+const colours = ['lime','red','blue','pink','purple','white'];
+const themePop = document.getElementById('themePop');
+
+function setAccent(colour) {
+  if (!colours.includes(colour)) return;
+  document.documentElement.dataset.accent = colour;
+  localStorage.setItem('fitgirl-accent', colour);
+
+  document.querySelectorAll('.swatch').forEach(button => {
+    button.setAttribute('aria-pressed', String(button.dataset.color === colour));
+  });
+}
+
+const savedAccent = localStorage.getItem('fitgirl-accent');
+if (savedAccent) setAccent(savedAccent);
+
+document.querySelectorAll('.swatch').forEach(button => {
+  button.addEventListener('click', () => setAccent(button.dataset.color));
+});
+
+document.getElementById('themeButton').addEventListener('click', () => {
+  themePop.classList.toggle('open');
+});
+
+document.addEventListener('click', event => {
+  if (!themePop.contains(event.target) &&
+      !document.getElementById('themeButton').contains(event.target)) {
+    themePop.classList.remove('open');
+  }
+});
+
+/* Active bottom navigation */
+document.querySelectorAll('.nav-item[href]').forEach(link => {
+  link.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    link.classList.add('active');
+  });
+});
+
+loadRepacks();
+</script>
+</body>
+</html>
